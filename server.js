@@ -13,22 +13,25 @@ app.get('/', function(req, res) {
 	res.send('todo API Root');
 });
 
-//GET /todos?completed=true
+//GET /todos?completed=true&q=work
 app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	var filteredTodos = todos;
 
 	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {completed: true});
-		console.log(filteredTodos);
-		console.log('in1');
+		if(queryParams.hasOwnProperty('q') && queryParams.q > 0) {
+			filteredTodos = _.filter(_.where(filteredTodos, {completed: true}), function(todo) { return todo.description.indexOf(queryParams.q) > -1});
+		} else {
+			filteredTodos = _.where(filteredTodos, {completed: true});
+		}
 	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {completed: false});
-		console.log(filteredTodos);
-		console.log('in2');
+		if(queryParams.hasOwnProperty('q') && queryParams.q > 0) {
+			filteredTodos = _.filter(_.where(filteredTodos, {completed: false}), function(todo) { return todo.description.indexOf(queryParams.q) > -1});
+		} else {
+			filteredTodos = _.where(filteredTodos, {completed: false});
+		}
 	}
-	console.log(filteredTodos);
-		console.log('in3');
+	
 
 	res.json(filteredTodos);
 });
