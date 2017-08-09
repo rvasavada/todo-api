@@ -139,18 +139,30 @@ app.post('/todos', function(req, res) {
 //DELETE /todos/:id
 app.delete('/todos/:id', function(req, res) {
 	var toDoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: toDoId
+
+	db.todo.findById(toDoId).then(function (todo) {
+		if (!!todo) {
+			todo.destroy();
+			res.status(204).send();
+		} else {
+			res.status(400).send();
+		}		
+	}, function (error) {
+		res.status(500).send();
 	});
 
-	if (matchedTodo) {
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	} else {
-		res.status(404).json({
-			"error": 'couldn\'t find id'
-		});
-	}
+	// var matchedTodo = _.findWhere(todos, {
+	// 	id: toDoId
+	// });
+
+	// if (matchedTodo) {
+	// 	todos = _.without(todos, matchedTodo);
+	// 	res.json(matchedTodo);
+	// } else {
+	// 	res.status(404).json({
+	// 		"error": 'couldn\'t find id'
+	// 	});
+	// }
 });
 
 //PUT /todos/:id
