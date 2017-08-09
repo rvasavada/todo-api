@@ -168,39 +168,64 @@ app.delete('/todos/:id', function(req, res) {
 //PUT /todos/:id
 app.put('/todos/:id', function(req, res) {
 	var toDoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: toDoId
-	});
 	var body = _.pick(req.body, 'completed', 'description');
-	var validAttributes = {};
+	var attributes = {};
 
-	if (!matchedTodo) {
-		res.status(404).json({
-			"error": 'couldn\'t find id'
-		});
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
 	}
 
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		// bad
-		res.status(404).json({
-			"error": 'couldn\'t update completed'
-		});
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description;
 	}
 
-	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-		validAttributes.description = body.description.trim();
-	} else if (body.hasOwnProperty('description')) {
-		// bad
-		res.status(404).json({
-			"error": 'couldn\'t update description'
-		});
-	}
+	db.todo.findById(toDoId).then(function(todo) {
+		if (todo) {
+			todo.update(attributes).then(function(todo) {
+				res.json(todo.toJSON());
+			}, function(error) {
+				res.status(400).json(error);
+			});
+		} else {
+			res.status(404).send();
+		}
+	}, function() {
+		res.status(500).send();
+	});
 
-	_.extend(matchedTodo, validAttributes);
+	// var matchedTodo = _.findWhere(todos, {
+	// 	id: toDoId
+	// });
+	// var body = _.pick(req.body, 'completed', 'description');
+	// var validAttributes = {};
 
-	res.json(matchedTodo);
+	// if (!matchedTodo) {
+	// 	res.status(404).json({
+	// 		"error": 'couldn\'t find id'
+	// 	});
+	// }
+
+	// if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+	// 	validAttributes.completed = body.completed;
+	// } else if (body.hasOwnProperty('completed')) {
+	// 	// bad
+	// 	res.status(404).json({
+	// 		"error": 'couldn\'t update completed'
+	// 	});
+	// }
+
+	// if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+	// 	validAttributes.description = body.description.trim();
+	// } else if (body.hasOwnProperty('description')) {
+	// 	// bad
+	// 	res.status(404).json({
+	// 		"error": 'couldn\'t update description'
+	// 	});
+	// }
+
+	// _.extend(matchedTodo, validAttributes);
+
+	// res.json(matchedTodo);
 
 
 });
